@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-04T21:37:30Z",
+  "title": "Design System: Umer Qureshi Portfolio",
+  "extensions": {
+    "colorMeta": {
+      "bg": { "role": "neutral-bg", "displayName": "Obsidian Canvas", "canonical": "#080808" },
+      "fg": { "role": "neutral-fg", "displayName": "Crisp White", "canonical": "#FAFAFA" },
+      "muted": { "role": "neutral-muted", "displayName": "Zinc Muted", "canonical": "#71717A" },
+      "border": { "role": "neutral-border", "displayName": "Hairline Border", "canonical": "rgba(255, 255, 255, 0.08)" },
+      "accent": { "role": "primary-accent", "displayName": "Purposeful Violet", "canonical": "#af5bf0" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display Sans", "purpose": "Section titles and main headings" },
+      "hero-serif": { "displayName": "Hero Serif", "purpose": "Exclusive italic display for hero name" },
+      "body": { "displayName": "Body Sans", "purpose": "Descriptions and readable text blocks" },
+      "label": { "displayName": "Label Monospace", "purpose": "Clean technical tags and metadata" }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Fluid height expansion and smooth reveals" }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Crisp white primary CTA button with subtle hover opacity shift.",
+      "html": "<button class=\"ds-btn-primary\">VIEW PROJECTS</button>",
+      "css": ".ds-btn-primary { background: #FAFAFA; color: #080808; padding: 12px 24px; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: opacity 0.2s; } .ds-btn-primary:hover { opacity: 0.9; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Dark surface button with hairline border.",
+      "html": "<button class=\"ds-btn-secondary\">CONTACT</button>",
+      "css": ".ds-btn-secondary { background: #121212; color: #FAFAFA; border: 1px solid rgba(255, 255, 255, 0.08); padding: 12px 24px; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: border-color 0.2s; } .ds-btn-secondary:hover { border-color: rgba(255, 255, 255, 0.2); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Restrained Technical Precision",
+    "overview": "This visual system governs the personal portfolio of a Software Engineer, Full-Stack Developer, AI Engineer, and UI/UX Designer. The experience is handcrafted, understated, intelligent, and timeless.",
+    "keyCharacteristics": [
+      "Understated & Honest: Direct, professional tone without corporate poetry or marketing hype.",
+      "Pure Typographic Hierarchy: Layout and font weight communicate importance without decorative brackets or random symbols.",
+      "Restrained Motion: Subtle, physics-based transitions that clarify UI state rather than command attention.",
+      "Dark High-Contrast Palette: Deep #080808 background with crisp white typography and purposeful accent touches."
+    ],
+    "rules": [
+      { "name": "The Rarity Accent Rule", "body": "The purple accent is restricted to <=5% of any viewport. Its rarity gives it purpose.", "section": "colors" },
+      { "name": "The No-Bracket Rule", "body": "Never surround text, numbers, or tags with brackets [], double slashes //, random dots, or stars.", "section": "typography" },
+      { "name": "The Clear Language Rule", "body": "Use plain, direct software engineering terminology. Never invent fake titles or corporate jargon.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces do not use heavy drop shadows or glow effects. Depth is expressed through crisp hairline boundaries.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do write direct, simple, human copy describing real software engineering work.",
+      "Do rely on typography weight, font size, and whitespace for visual hierarchy.",
+      "Do maintain strict monochrome styling with subtle accent touches on active focus states."
+    ],
+    "donts": [
+      "Don't use decorative brackets [ EXAMPLE ], double slashes //, fake catalog numbers 03.01, random dots, or stars.",
+      "Don't use forbidden jargon words (e.g. Architecture, Editorial Chronicle, Spatial, Manifesto, Innovation Labs, Visual Artifact, Systems Direction, Creative Technologist).",
+      "Don't invent fake companies, projects, dates, awards, or achievements. Use clean, honest placeholders when real data is not available."
+    ]
+  }
+}
