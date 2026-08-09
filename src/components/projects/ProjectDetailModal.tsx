@@ -152,17 +152,16 @@ export function ProjectDetailModal({
               </button>
             </div>
 
-            {/* Main Featured Image Container with Shared Layout Morph */}
-            <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-zinc-950 border border-white/10 group">
+            {/* Main Featured Image Container */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden flex items-center justify-center rounded-2xl">
               <Image
                 src={currentImage}
                 alt={project.title}
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 900px"
-                className="object-contain bg-black/90 p-2 sm:p-4"
+                className="object-contain rounded-2xl"
               />
-              <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-2xl pointer-events-none" />
             </div>
 
             {/* Image Gallery Thumbnails if multiple images exist */}
@@ -183,7 +182,7 @@ export function ProjectDetailModal({
                       alt={`${project.title} screenshot ${idx + 1}`}
                       fill
                       sizes="80px"
-                      className="object-cover"
+                      className="object-contain rounded-md"
                     />
                   </button>
                 ))}

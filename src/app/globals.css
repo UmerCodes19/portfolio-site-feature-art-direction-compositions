@@ -110,7 +110,7 @@ html.light-mode section {
   color: var(--color-fg) !important;
 }
 
-html.light-mode h1,
+html.light-mode h1:not(.hero-bg-text),
 html.light-mode h2,
 html.light-mode h3,
 html.light-mode h4 {
@@ -143,6 +143,17 @@ html.light-mode h4 {
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
     min-height: 100dvh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Coarse pointer (touch devices) — minimum tap target padding */
+  @media (pointer: coarse) {
+    button, a {
+      min-height: 44px;
+    }
   }
 
   /* Reduced motion — respect system preference */
@@ -343,3 +354,59 @@ html.light-mode h4 {
 .animate-shiny-sweep {
   animation: shiny-sweep 4s linear infinite;
 }
+
+@keyframes glitter-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+.magic-word-accent {
+  /* Real macro purple glitter texture clipped to text with balanced light metallic luster */
+  background-image: 
+    linear-gradient(rgba(232, 185, 254, 0.35), rgba(200, 140, 252, 0.2)),
+    url('/images/purple_glitter_texture.png');
+  background-size: 100% 100%, 160px 160px;
+  background-repeat: no-repeat, repeat;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: glitter-flow 90s linear infinite;
+  filter: brightness(1.65) contrast(1.3) saturate(1.18) drop-shadow(0 0 9px rgba(192, 132, 252, 0.45));
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Marquee Infinite Loop Utilities */
+@keyframes marquee-slide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.marquee-mask-edges {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+
+
+
+

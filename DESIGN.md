@@ -63,11 +63,12 @@ components:
 
 This visual system governs the personal portfolio of a Software Engineer, Full-Stack Developer, AI Engineer, and UI/UX Designer. The experience is handcrafted, understated, intelligent, and timeless. Every component and interaction exists solely to communicate technical credibility and real engineering work.
 
-The system relies on generous whitespace, high optical typography hierarchy, thin hairline borders, and subtle micro-interactions. Decorative AI slop, corporate buzzwords, and artificial visual embellishments are strictly forbidden.
+The core design token system—including the `#080808` obsidian dark canvas, `#FAFAFA` crisp foreground, `#121212` elevated quartz surfaces, `#af5bf0` quartz electric violet accent, hairline `border-white/[0.08]` rules, Geist Sans display weights, and Instrument Serif italic contrast—is **strictly shared across all three core site chapters: Hero, Projects Exhibition, and Contact Section.**
 
 **Key Characteristics:**
 - **Understated & Honest**: Direct, professional tone without corporate poetry or marketing hype.
 - **Pure Typographic Hierarchy**: Layout and font weight communicate importance without decorative brackets or random symbols.
+- **Shared Token System**: Unified visual tokens, hairline structures, and color palettes applied consistently across Hero, Projects, and Contact.
 - **Restrained Motion**: Subtle, physics-based transitions that clarify UI state rather than command attention.
 - **Dark High-Contrast Palette**: Deep `#080808` background with crisp white typography and purposeful accent touches.
 
@@ -146,6 +147,12 @@ Surfaces are flat at rest. Depth is established through subtle background lumina
 
 ### Project Exhibition Cards
 - **Structure**: High-contrast brand typography, clean project metadata, direct image/video viewports without stacked nested cards.
+
+### Contact Section & Editorial Colophon
+- **Headline**: Geist Sans Light paired with Instrument Serif Italic text shimmer for kinetic climax statement (`Initiate Contact.`).
+- **Direct Action Stage**: Elevated `#121212` quartz enclosure with prominent mailto headline link, dual primary buttons (`Send Email` primary + `Copy Address` secondary with tactile feedback state), and live status indicator.
+- **Direct Channels**: Vertical editorial cards with hairline `border-white/[0.08]` dividers, channel metadata, and top-right arrow hover transitions.
+- **Colophon Footer**: Standardized to `Umer Qureshi` copyright, role summary, and live location/timezone metadata.
 
 ## Do's and Don'ts
 

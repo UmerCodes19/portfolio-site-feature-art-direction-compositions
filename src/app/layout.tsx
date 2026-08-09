@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
@@ -20,6 +20,12 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: "Portfolio Studio & Customizer",
   description: "Design & development portfolio",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 import { ThemeProvider } from "@/context/ThemeContext";

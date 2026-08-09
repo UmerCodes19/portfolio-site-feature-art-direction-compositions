@@ -73,47 +73,26 @@ export function CursorPreview({
           }}
           className="hidden md:block w-84 h-52 lg:w-92 lg:h-56"
         >
-          {/* Frameless floating card with hairline border, soft shadow & dark glass overlay */}
-          <div className="w-full h-full rounded-2xl overflow-hidden bg-zinc-950/95 border border-white/15 shadow-[0_16px_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl relative">
-            <div className="relative w-full h-full overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeProject.slug}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full h-full"
-                >
-                  <Image
-                    src={activeProject.coverImage}
-                    alt={activeProject.title}
-                    fill
-                    sizes="(max-width: 1024px) 336px, 368px"
-                    className="object-cover brightness-[0.92] contrast-[1.05]"
-                  />
-
-                  {/* Top vignette overlay for optical depth */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                  {/* Redesigned bottom metadata strip — ultra-clean editorial layout */}
-                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 z-10 flex items-center justify-between bg-zinc-950/80 backdrop-blur-md border-t border-white/10">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="font-mono text-xs tracking-[0.2em] text-zinc-400 tabular-nums shrink-0 font-medium">
-                        {activeProject.index}
-                      </span>
-                      <h4 className="text-xs font-medium tracking-tight text-white truncate">
-                        {activeProject.title}
-                      </h4>
-                    </div>
-                    
-                    <span className="text-xs font-mono tracking-[0.16em] uppercase text-zinc-400 shrink-0 bg-white/[0.06] border border-white/10 px-2 py-0.5 rounded-md">
-                      {activeProject.category}
-                    </span>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          {/* Clean frameless floating image with subtle image crossfade */}
+          <div className="w-full h-full relative rounded-2xl overflow-hidden shadow-2xl">
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={activeProject.slug}
+                initial={{ opacity: 0, scale: 0.98, filter: "blur(4px)" }}
+                animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, filter: "blur(4px)" }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 w-full h-full rounded-2xl overflow-hidden"
+              >
+                <Image
+                  src={activeProject.coverImage}
+                  alt={activeProject.title}
+                  fill
+                  sizes="(max-width: 1024px) 336px, 368px"
+                  className="object-cover rounded-2xl"
+                />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </motion.div>
       )}

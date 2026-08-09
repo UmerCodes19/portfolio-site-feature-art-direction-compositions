@@ -1,5 +1,8 @@
 export interface ContactData {
+  name: string;
+  title: string;
   email: string;
+  phone: string;
   location: string;
   availability: string;
   preferredMethod: string;
@@ -12,21 +15,29 @@ export interface ContactData {
 }
 
 export const CONTACT_DATA: ContactData = {
-  email: "umerquraishi.dev@gmail.com",
-  location: "Karachi, Pakistan (Open to Remote / Relocation)",
+  name: "Muhammad Umer Qureshi",
+  title: "Software Engineer",
+  email: "0252umer@gmail.com",
+  phone: "+92 334 3778636",
+  location: "Karachi, Sindh, Pakistan (Open to Remote / Relocation)",
   availability: "Available for full-time roles & select engineering contracts.",
-  preferredMethod: "Email / LinkedIn",
-  closingStatement: "Always open to discussing new opportunities, software architecture, and product engineering.",
+  preferredMethod: "Email / LinkedIn / Phone",
+  closingStatement: "Always open to discussing new opportunities, full-stack architecture, AI engineering, and technical leadership.",
   socials: [
     {
       name: "LinkedIn",
-      label: "linkedin.com/in/umer-quraishi",
-      url: "https://linkedin.com/in/umer-quraishi"
+      label: "linkedin.com/in/umerqureshi19",
+      url: "https://www.linkedin.com/in/umerqureshi19"
     },
     {
       name: "GitHub",
-      label: "github.com/umerquraishi",
-      url: "https://github.com/umerquraishi"
+      label: "github.com/UmerCodes19",
+      url: "https://github.com/UmerCodes19"
+    },
+    {
+      name: "Direct Phone",
+      label: "+92 334 3778636",
+      url: "tel:+923343778636"
     },
     {
       name: "Resume",
@@ -35,3 +46,4 @@ export const CONTACT_DATA: ContactData = {
     }
   ]
 };
+

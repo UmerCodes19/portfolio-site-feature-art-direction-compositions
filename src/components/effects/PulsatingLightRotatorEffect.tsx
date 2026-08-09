@@ -8,58 +8,97 @@ interface PulsatingLightRotatorEffectProps {
   duration?: number;
   className?: string;
   style?: React.CSSProperties;
+  isLight?: boolean;
 }
 
 export function PulsatingLightRotatorEffect({
   words = ["DEVELOPER", "DESIGNER", "ENGINEER", "CREATOR", "ARCHITECT"],
-  duration = 4000,
+  duration = 5500,
   className = "",
   style,
+  isLight = false,
 }: PulsatingLightRotatorEffectProps) {
   const [index, setIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
+    if (isHovered) return; // Pause automatic cycling when visitor hovers over the word
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % words.length);
     }, duration);
     return () => clearInterval(interval);
-  }, [words, duration]);
+  }, [words, duration, isHovered]);
+
+  const handleNextWord = () => {
+    setIndex((prev) => (prev + 1) % words.length);
+  };
+
+  const currentWord = words[index];
 
   return (
-    <span className={`inline-block relative overflow-visible h-[1.2em] leading-none ${className}`} style={style}>
+    <span
+      onClick={handleNextWord}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      title="Click to advance to the next title"
+      className={`inline-block relative overflow-visible h-[1.2em] leading-none cursor-pointer group transition-transform duration-300 active:scale-98 ${className}`}
+      style={style}
+    >
       <AnimatePresence mode="wait">
         <motion.span
-          key={words[index]}
-          initial={{
-            opacity: 0,
-            filter: "brightness(0%) blur(16px)",
-            scale: 0.98,
-          }}
-          animate={{
-            opacity: [0, 1, 1, 0],
-            filter: [
-              "brightness(0%) blur(16px)",
-              "brightness(220%) blur(0px)",
-              "brightness(150%) blur(0px)",
-              "brightness(0%) blur(16px)",
-            ],
-            scale: [0.98, 1, 1, 1.02],
-            transition: {
-              duration: duration / 1000,
-              times: [0, 0.25, 0.75, 1],
-              ease: "easeInOut",
+          key={currentWord}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.03,
+                delayChildren: 0.05,
+              },
+            },
+            exit: {
+              opacity: 0,
+              filter: "blur(10px)",
+              y: -8,
+              transition: { duration: 0.3, ease: "easeIn" },
             },
           }}
-          exit={{
-            opacity: 0,
-            filter: "brightness(0%) blur(16px)",
-            scale: 1.02,
-          }}
-          className="inline-block relative whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-neutral-400 via-white to-neutral-400 bg-[length:200%_auto] animate-shimmer drop-shadow-[0_0_35px_rgba(255,255,255,0.6)]"
+          className={`inline-flex relative whitespace-nowrap ${
+            isLight 
+              ? "bg-clip-text text-transparent bg-gradient-to-b from-zinc-800 via-zinc-600 to-zinc-800 font-extrabold tracking-tight" 
+              : "bg-clip-text text-transparent bg-gradient-to-r from-neutral-300 via-white to-neutral-300 bg-[length:200%_auto] animate-shimmer"
+          }`}
         >
-          {words[index]}
+          {currentWord.split("").map((char, charIdx) => (
+            <motion.span
+              key={`${currentWord}-${charIdx}`}
+              variants={{
+                hidden: { opacity: 0, y: 12, filter: "blur(6px)" },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  filter: "blur(0px)",
+                  transition: {
+                    duration: 0.35,
+                    ease: [0.16, 1, 0.3, 1],
+                  },
+                },
+              }}
+              className="inline-block"
+            >
+              {char}
+            </motion.span>
+          ))}
         </motion.span>
       </AnimatePresence>
+
+      {/* Subtle Hint Indicator on Hover */}
+      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-mono tracking-widest uppercase text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none">
+        [ click to cycle ]
+      </span>
     </span>
   );
 }

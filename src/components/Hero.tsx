@@ -35,6 +35,7 @@ import { LetterSwapPingPong } from "./effects/LetterSwapPingPong";
 import { Letter3DSwap } from "./effects/Letter3DSwap";
 import { TextRotate } from "./effects/TextRotate";
 import { PulsatingLightRotatorEffect } from "./effects/PulsatingLightRotatorEffect";
+import { useTheme } from "@/context/ThemeContext";
 
 // Full Config Interface for Typography Playground
 interface TypographyPlaygroundConfig {
@@ -350,11 +351,11 @@ const DEFAULT_PLAYGROUND_CONFIG: TypographyPlaygroundConfig = {
   ctaOffsetY: 0,
   ctaArrowGap: 10,
 
-  showSignature: true,
+  showSignature: false,
   showRoles: false,
   showCTA: true,
 
-  bgTextEffect: "none",
+  bgTextEffect: "pulsating-light",
 };
 
 // 22 Art Direction Composition Blueprints
@@ -972,6 +973,7 @@ const COMPOSITION_BLUEPRINTS: CompositionBlueprint[] = [
 ];
 
 export function Hero() {
+  const { theme: globalTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLHeadingElement>(null);
   const portraitRef = useRef<HTMLDivElement>(null);
@@ -979,6 +981,7 @@ export function Hero() {
   const signatureRef = useRef<HTMLDivElement>(null);
   const titlesRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
+  const auraRef = useRef<HTMLDivElement>(null);
 
   // Playground State
   const [config, setConfig] = useState<TypographyPlaygroundConfig>(DEFAULT_PLAYGROUND_CONFIG);
@@ -989,6 +992,14 @@ export function Hero() {
   const [hideStudioUI, setHideStudioUI] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [signatureKey, setSignatureKey] = useState<number>(0);
+
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  // Keep config theme synced with global app theme context & mark client mounted
+  useEffect(() => {
+    setIsMounted(true);
+    setConfig((prev) => ({ ...prev, theme: globalTheme }));
+  }, [globalTheme]);
 
   const applyComposition = (comp: CompositionBlueprint) => {
     setActiveCompId(comp.id);
@@ -1004,7 +1015,10 @@ export function Hero() {
     setTimeout(() => setToastMessage(null), 2000);
   };
 
+  // Trigger entrance animation only AFTER client mounting settles
   useEffect(() => {
+    if (!isMounted) return;
+
     const container = containerRef.current;
     const textEl = textRef.current;
     const portraitEl = portraitRef.current;
@@ -1014,7 +1028,6 @@ export function Hero() {
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Entrance animation
     const ctx = gsap.context(() => {
       const validTargets = [
         textEl,
@@ -1076,14 +1089,28 @@ export function Hero() {
           "-=0.7"
         );
       }
+      if (auraRef.current) {
+        tl.fromTo(
+          auraRef.current,
+          { opacity: 0, x: 70, filter: "blur(40px)" },
+          { opacity: 1, x: 0, filter: "blur(48px)", duration: 2.2, ease: "power3.out" },
+          "-=1.4"
+        );
+      }
     }, container);
 
-    if (prefersReducedMotion) return () => ctx.revert();
+    return () => ctx.revert();
+  }, [isMounted]);
 
-    // Subtle 60fps depth parallax on mouse move (only if enabled)
+  // Parallax Event Listener
+  useEffect(() => {
+    const container = containerRef.current;
+    const textEl = textRef.current;
+    const portraitEl = portraitRef.current;
+
+    if (!container || !textEl || !portraitEl || !config.enableParallax) return;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (!config.enableParallax) return;
-
       const rect = container.getBoundingClientRect();
       const relativeX = e.clientX - rect.left;
       const relativeY = e.clientY - rect.top;
@@ -1124,9 +1151,8 @@ export function Hero() {
     return () => {
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseleave", handleMouseLeave);
-      ctx.revert();
     };
-  }, [config.portraitX, config.portraitY]);
+  }, [config.enableParallax, config.portraitX, config.portraitY]);
 
   // Export handlers
   const handleExportCSS = () => {
@@ -1375,7 +1401,16 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
 
   // Background color mapping
   const getBackgroundColor = () => {
-    if (config.theme === "light") return "#FAFAFA";
+    if (config.theme === "light") {
+      switch (config.bgType) {
+        case "black": return "#F4F4F5";
+        case "dark-gray": return "#E5E5E5";
+        case "light-gray": return "#F4F4F5";
+        case "white": return "#FFFFFF";
+        case "transparent": return "transparent";
+        default: return "#F4F4F5";
+      }
+    }
     switch (config.bgType) {
       case "dark-gray": return "#141414";
       case "light-gray": return "#E5E5E5";
@@ -1389,16 +1424,18 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
   // Viewport Device Width Mapping
   const getViewportWidthStyle = () => {
     switch (config.viewportDevice) {
-      case "laptop": return "max-w-[1440px] mx-auto border-x border-neutral-800";
-      case "tablet": return "max-w-[768px] mx-auto border-x border-neutral-800";
-      case "mobile": return "max-w-[375px] mx-auto border-x border-neutral-800";
+      case "laptop": return "max-w-[1440px] mx-auto border-x border-neutral-800/40";
+      case "tablet": return "max-w-[768px] mx-auto border-x border-neutral-800/40";
+      case "mobile": return "max-w-[375px] mx-auto border-x border-neutral-800/40";
       case "desktop":
       default: return "w-full";
     }
   };
 
+  const isLight = config.theme === "light";
+
   return (
-    <div className="relative w-full h-screen bg-[#040404] overflow-hidden flex flex-col justify-between select-none">
+    <div className={`relative w-full h-screen overflow-hidden flex flex-col justify-between select-none transition-colors duration-500 ${isLight ? "bg-[#F4F4F5]" : "bg-[#040404]"}`}>
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 left-6 z-50 px-4 py-2.5 bg-emerald-950 text-emerald-100 text-xs font-mono rounded-xl border border-emerald-700 shadow-2xl animate-fade-in">
@@ -1416,38 +1453,18 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
           transformOrigin: "top center",
         }}
       >
-        {/* ── Top Minimal Navigation ──────────────────────────── */}
+        {/* ── Top Navigation (Clean & Minimal) ──────────────────── */}
         <nav
           ref={navRef}
           aria-label="Main Navigation"
-          className="absolute right-0 top-0 z-30 p-6 md:p-10 flex items-center justify-end gap-4 md:gap-6 transition-all duration-300 pointer-events-auto"
-        >
-          <button
-            type="button"
-            onClick={() => setIsPanelOpen((prev) => !prev)}
-            className="px-3 py-1.5 bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-700/80 rounded-full text-neutral-300 hover:text-white text-xs font-mono flex items-center gap-2 transition-all cursor-pointer shadow-lg hover:border-amber-500/50"
-            title="Toggle Customization Studio"
-          >
-            <span>🎨</span>
-            <span className="text-[10px] md:text-[11px] font-semibold uppercase tracking-wider">
-              {isPanelOpen ? "Close Studio" : "Customizer"}
-            </span>
-          </button>
+          className="absolute right-0 top-0 z-30 p-6 md:p-10 flex items-center justify-end gap-4 transition-all duration-300 pointer-events-auto"
+        />
 
-          <button
-            type="button"
-            className="group flex items-center gap-3 text-[#D4D4D4] hover:text-white transition-colors duration-300 cursor-pointer"
-          >
-            <span className="text-[12px] md:text-[13px] font-sans font-medium tracking-[0.25em] uppercase select-none">
-              MENU
-            </span>
-            <div className="flex flex-col justify-between w-[22px] h-[12px] py-[1px]">
-              <span className="w-full h-[1.5px] bg-current transition-transform duration-300 group-hover:scale-x-105 origin-right" />
-              <span className="w-full h-[1.5px] bg-current transition-transform duration-300 group-hover:scale-x-105 origin-right" />
-              <span className="w-full h-[1.5px] bg-current transition-transform duration-300 group-hover:scale-x-105 origin-right" />
-            </div>
-          </button>
-        </nav>
+        {/* ── Ambient Purple Aura Vignette (Animated Entrance Reveal) ────── */}
+        <div ref={auraRef} className="absolute inset-0 pointer-events-none z-20">
+          <div className="absolute inset-x-0 bottom-0 h-[45vh] bg-gradient-to-t from-[#af5bf0]/18 via-[#af5bf0]/6 to-transparent blur-3xl opacity-80" />
+          <div className="absolute top-1/2 -right-20 -translate-y-1/2 w-80 h-[65vh] bg-gradient-to-l from-[#af5bf0]/12 to-transparent blur-3xl opacity-60 hidden md:block" />
+        </div>
 
         {/* ── Oversized Background Typography ─────────────────── */}
         <div
@@ -1468,7 +1485,7 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
           {/* GSAP Parallax Wrapper Layer */}
           <div ref={textRef} className={`flex items-center justify-center ${config.bgTextEffect !== "none" ? "pointer-events-auto" : "pointer-events-none"}`}>
             <h1
-              className="uppercase select-none transition-all duration-75 ease-out"
+              className="hero-bg-text uppercase select-none transition-all duration-300 ease-out"
               style={{
                 fontFamily: config.fontFamily,
                 fontWeight: config.fontWeight,
@@ -1478,21 +1495,33 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
                 wordSpacing: `${config.wordSpacing}px`,
                 WebkitTextStroke: config.strokeWidth > 0 ? `${config.strokeWidth}px ${config.strokeColor || config.textColor}` : "none",
                 transform: `scaleY(${config.scaleY}) scaleX(${config.scaleX}) translate(${config.translateX}vw, ${config.translateY}vh) rotate(${config.rotate}deg) skew(${config.skewX}deg, ${config.skewY}deg)`,
-                color: config.bgTextEffect !== "none" && (config.textColor === "#131313" || config.textColor === "#0F0F11" || config.textColor === "#000000") ? "#E4E4E7" : config.textColor,
-                opacity: config.opacity,
-                filter: `blur(${config.blur}px) brightness(${config.brightness}%) contrast(${config.contrast}%) saturation(${config.saturation}%) drop-shadow(0 ${config.shadowBlur}px ${config.shadowBlur}px ${config.shadowColor}) url(#typographyGrain)`,
-                mixBlendMode: config.blendMode as any,
+                color: isLight 
+                  ? "#A1A1AA"
+                  : (config.bgTextEffect !== "none" && (config.textColor === "#131313" || config.textColor === "#0F0F11" || config.textColor === "#000000") ? "#E4E4E7" : config.textColor),
+                opacity: isLight ? 0.35 : config.opacity,
+                filter: isLight 
+                  ? `blur(${config.blur}px) brightness(${config.brightness}%) contrast(${config.contrast}%)`
+                  : `blur(${config.blur}px) brightness(${config.brightness}%) contrast(${config.contrast}%) saturation(${config.saturation}%) drop-shadow(0 ${config.shadowBlur}px ${config.shadowBlur}px ${config.shadowColor}) url(#typographyGrain)`,
+                mixBlendMode: isLight ? "normal" : (config.blendMode as any),
                 textRendering: "optimizeLegibility",
-                WebkitMaskImage: `linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${config.maskStart}%, rgba(0,0,0,0.2) ${config.maskEnd}%, rgba(0,0,0,0) 100%)`,
-                maskImage: `linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${config.maskStart}%, rgba(0,0,0,0.2) ${config.maskEnd}%, rgba(0,0,0,0) 100%)`,
+                WebkitMaskImage: isLight 
+                  ? "linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.1) 100%)"
+                  : `linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${config.maskStart}%, rgba(0,0,0,0.2) ${config.maskEnd}%, rgba(0,0,0,0) 100%)`,
+                maskImage: isLight 
+                  ? "linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.1) 100%)"
+                  : `linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${config.maskStart}%, rgba(0,0,0,0.2) ${config.maskEnd}%, rgba(0,0,0,0) 100%)`,
               }}
             >
-              {renderBgTextContent()}
+              {config.bgTextEffect === "pulsating-light" ? (
+                <PulsatingLightRotatorEffect isLight={isLight} words={["ENGINEER", "DEVELOPER", "DESIGNER", "CREATOR", "ARCHITECT"]} duration={5500} />
+              ) : (
+                renderBgTextContent()
+              )}
             </h1>
           </div>
         </div>
 
-        {/* ── Foreground Portrait ─────────────────────────────── */}
+        {/* ── Foreground Portrait (Crisp Transparent PNG with Smooth Baseline Fade) ─────────────────────────────── */}
         <div
           ref={portraitRef}
           className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-[1200px] h-[78vh] sm:h-[82vh] md:h-[84vh] lg:h-[86vh] pointer-events-none flex items-end justify-center"
@@ -1504,6 +1533,8 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
             className="w-full h-full relative pointer-events-none flex items-end justify-center transition-all duration-75"
             style={{
               transform: `translate(${config.portraitX}px, ${config.portraitY}px) scale(${config.portraitScale}) rotate(${config.portraitRotate}deg)`,
+              WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 82%, transparent 99%)",
+              maskImage: "linear-gradient(to bottom, black 0%, black 82%, transparent 99%)",
             }}
           >
             <Image
@@ -1511,118 +1542,154 @@ mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) ${conf
               alt="Portrait of Full Stack Developer and UI/UX Designer"
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
-      priority
+              priority
               quality={95}
-              className="object-contain object-bottom pointer-events-none"
+              className={`object-contain object-bottom pointer-events-none relative z-10 transition-all duration-500 ${
+                isLight ? "contrast-[1.05] brightness-[1.02]" : ""
+              }`}
             />
 
-            {/* ── Overlay Signature, Professional Title, CTA & Arrow (Exact Reference Match) ── */}
-            <div className="absolute inset-x-0 bottom-0 z-40 flex flex-col items-center justify-end pb-7 sm:pb-9 md:pb-12 pointer-events-none">
-              <div className="flex flex-col items-center text-center max-w-xl mx-auto px-4 w-full">
-                {/* 1. Signature Name (Animated Cursive SVG Stroke Paths with Interactive Replay Hint & Subtle Micro-Feedback) */}
-                {config.showSignature && (
-                  <div
-                    key={signatureKey}
-                    ref={signatureRef}
-                    onClick={handleReplaySignature}
-                    title="Click to replay signature handwriting effect"
-                    className="relative select-none mb-3 sm:mb-4 pointer-events-auto transition-all duration-75 flex flex-col items-center justify-center cursor-pointer group"
-                    style={{
-                      color: config.signatureColor || "#af5bf0",
-                      transform: `translate(${config.signatureOffsetX}px, ${config.signatureOffsetY}px) scaleX(${config.signatureScaleX}) scaleY(${config.signatureScaleY})`,
-                      filter: `drop-shadow(0 2px ${config.signatureGlow}px ${config.signatureGlowColor || config.signatureColor || "#af5bf0"})`,
-                    }}
-                  >
-                    <HandwrittenSignature
-                      text="Umer Qureshi"
-                      letterHeight={config.signatureFontSize || 56}
-                      letterSpacing={0}
-                      durationPerLetterMs={config.signatureDurationMs || 420}
-                      initialDelayMs={config.signatureInitialDelayMs || 800}
-                      strokeWidth={config.signatureStrokeWidth || 2}
-                      overlapRatio={config.signatureOverlapRatio ?? 0.58}
-                    />
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-[10px] font-mono tracking-widest text-[#af5bf0]/80 uppercase mt-1">
-                      [ click to stroke-replay ]
-                    </span>
-                  </div>
-                )}
+            {/* ── Cohesive Organic Overlay Layout (Final Polish Pass) ── */}
+            {/* 1. Signature Name (Centered naturally across upper chest line) */}
+            {config.showSignature && isMounted && (
+              <div
+                key={signatureKey}
+                ref={signatureRef}
+                onClick={handleReplaySignature}
+                title="Click to replay signature handwriting effect"
+                className="absolute top-[48%] inset-x-0 z-40 select-none pointer-events-auto transition-all duration-75 flex items-center justify-center cursor-pointer group"
+                style={{
+                  color: config.signatureColor || "#af5bf0",
+                  transform: `translate(${config.signatureOffsetX}px, ${config.signatureOffsetY}px) scaleX(${config.signatureScaleX}) scaleY(${config.signatureScaleY})`,
+                  filter: `drop-shadow(0 2px ${config.signatureGlow}px ${config.signatureGlowColor || config.signatureColor || "#af5bf0"})`,
+                }}
+              >
+                <HandwrittenSignature
+                  text="Umer Qureshi"
+                  letterHeight={config.signatureFontSize || 52}
+                  letterSpacing={0}
+                  durationPerLetterMs={config.signatureDurationMs || 420}
+                  initialDelayMs={config.signatureInitialDelayMs || 800}
+                  strokeWidth={config.signatureStrokeWidth || 2}
+                  overlapRatio={config.signatureOverlapRatio ?? 0.58}
+                />
+              </div>
+            )}
 
-                {/* 2. Professional Title & Local Status Touch */}
-                {config.showRoles && (
-                  <div
-                    ref={titlesRef}
-                    className="flex flex-col items-center select-none pointer-events-auto transition-all duration-75"
-                    style={{
-                      transform: `translate(${config.roleOffsetX}px, ${config.roleOffsetY}px)`,
-                      gap: `${config.roleGap}px`,
-                      marginBottom: "48px",
-                    }}
+            {/* 2. Baseline Overlay: Unified Center Axis for Tagline + CTAs + Marquee */}
+            <div className="absolute inset-x-0 bottom-0 z-40 pb-6 sm:pb-8 pointer-events-none px-6 md:px-12 max-w-6xl mx-auto w-full flex flex-col gap-6 items-center">
+              {/* Tagline & CTAs Unified Axis Row */}
+              <div className="flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 w-full max-w-5xl mx-auto">
+                {/* Headline Tagline Statement */}
+                <div className="flex flex-col items-center md:items-start text-center md:text-left select-none pointer-events-auto">
+                  <p
+                    className="text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-tight font-normal tracking-tight text-zinc-900 dark:text-white drop-shadow-sm dark:drop-shadow-md transition-colors duration-300"
+                    style={{ fontFamily: "'Instrument Serif', serif" }}
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                       <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                       <span className="text-[9px] font-mono tracking-widest text-emerald-500 uppercase">GMT+5 • Available</span>
-                    </div>
-                    <span
-                      className="text-neutral-300 uppercase leading-tight font-sans block"
-                      style={{
-                        fontSize: `${config.roleFontSize}px`,
-                        letterSpacing: `${config.roleLetterSpacing}em`,
-                        fontWeight: config.roleFontWeight,
-                      }}
-                    >
-                      FULL STACK DEVELOPER
-                    </span>
-                    <span
-                      className="text-neutral-300 uppercase leading-tight font-sans block"
-                      style={{
-                        fontSize: `${config.roleFontSize}px`,
-                        letterSpacing: `${config.roleLetterSpacing}em`,
-                        fontWeight: config.roleFontWeight,
-                      }}
-                    >
-                      UI/UX DESIGNER
-                    </span>
-                  </div>
-                )}
+                    I write the logic. You see the <span className="italic font-normal font-serif magic-word-accent">magic.</span>
+                  </p>
+                </div>
 
-                {/* 3. Call To Action & Arrow */}
+                {/* Matched CTA Button Group */}
                 {config.showCTA && (
                   <div
                     ref={ctaRef}
-                    className="flex flex-col items-center group cursor-pointer pointer-events-auto select-none transition-all duration-75"
-                    style={{
-                      transform: `translate(${config.ctaOffsetX}px, ${config.ctaOffsetY}px)`,
-                      gap: `${config.ctaArrowGap}px`,
-                    }}
-                    onClick={() => {
-                      const el = document.getElementById("projects") || document.getElementById("work");
-                      if (el) {
-                        el.scrollIntoView({ behavior: "smooth" });
-                      } else {
-                        window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
-                      }
-                    }}
+                    className="flex flex-row items-center gap-3 sm:gap-4 pointer-events-auto select-none shrink-0"
                   >
-                    <span
-                      className="text-neutral-400 group-hover:text-white uppercase transition-colors duration-300 font-sans block"
-                      style={{
-                        fontSize: `${config.ctaFontSize}px`,
-                        letterSpacing: `${config.ctaLetterSpacing}em`,
+                    {/* Primary Action Button — Explore Projects (Disciplined Restrained Accent) */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById("projects") || document.getElementById("work");
+                        if (el) {
+                          el.scrollIntoView({ behavior: "smooth" });
+                        } else {
+                          window.scrollTo({ top: window.innerHeight, behavior: "smooth" });
+                        }
                       }}
+                      className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full border border-zinc-800/40 dark:border-white/25 hover:border-zinc-900 dark:hover:border-white/60 bg-zinc-900/15 dark:bg-white/10 hover:bg-zinc-900/25 dark:hover:bg-white/20 text-zinc-900 dark:text-white text-xs sm:text-sm font-sans font-medium tracking-wide transition-all duration-300 backdrop-blur-md cursor-pointer hover:shadow-lg"
                     >
-                      EXPLORE MY WORK
-                    </span>
-                    <svg
-                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 group-hover:text-white stroke-[1.2] transition-transform duration-300 group-hover:translate-y-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                      <span>Explore Projects</span>
+                      <svg
+                        className="w-3.5 h-3.5 text-zinc-900 dark:text-white/80 group-hover:text-zinc-950 dark:group-hover:text-white group-hover:translate-x-1 transition-all duration-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
+                    </button>
+
+                    {/* Secondary Ghost Button — Download Resume */}
+                    <a
+                      href="/resume.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-center gap-2.5 px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full border border-zinc-800/30 dark:border-white/15 hover:border-zinc-900 dark:hover:border-white/40 bg-zinc-900/[0.08] dark:bg-white/[0.03] hover:bg-zinc-900/15 dark:hover:bg-white/10 text-zinc-800 dark:text-neutral-300 hover:text-zinc-950 dark:hover:text-white text-xs sm:text-sm font-sans font-medium tracking-wide transition-all duration-300 backdrop-blur-md cursor-pointer"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
-                    </svg>
+                      <span>Resume</span>
+                      <svg
+                        className="w-3.5 h-3.5 text-zinc-700 dark:text-neutral-400 group-hover:text-zinc-950 dark:group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      </svg>
+                    </a>
                   </div>
                 )}
+              </div>
+
+              {/* Baseline Layer: Infinite Brand Icon Marquee Across Full Width */}
+              <div className="w-full mt-6 pt-6 overflow-hidden pointer-events-auto select-none marquee-mask-edges border-t border-zinc-800/20 dark:border-white/[0.08]">
+                <div className="animate-marquee-track flex items-center gap-12 sm:gap-16 opacity-80 dark:opacity-60 hover:opacity-100 transition-opacity duration-300">
+                  {/* Track Set 1 */}
+                  <div className="flex items-center gap-12 sm:gap-16 shrink-0">
+                    {/* React */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#61DAFB] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0-2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm-7.66 8.52a.75.75 0 0 1-.22-1.04C5.2 12.63 7.85 10 12 10s6.8 2.63 7.88 4.48a.75.75 0 1 1-1.3.76C17.65 13.62 15.35 11.5 12 11.5s-5.65 2.12-6.58 3.74a.75.75 0 0 1-1.08.28zm0-7.04a.75.75 0 0 1 1.08.28C6.35 10.38 8.65 12.5 12 12.5s5.65-2.12 6.58-3.74a.75.75 0 1 1 1.3.76C18.8 11.37 16.15 14 12 14s-6.8-2.63-7.88-4.48a.75.75 0 0 1 .22-1.04z"/></svg>
+                    {/* Next.js */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.373 24 0 18.627 0 12S5.373 0 12 0s12 5.373 12 12c0 3.584-1.574 6.801-4.07 9.001l-1.265-1.023zM12 2.182c-5.423 0-9.818 4.395-9.818 9.818 0 3.197 1.528 6.037 3.896 7.838l7.534-11.455h2.182v10.024h-1.964V6.992l-6.837 10.428A9.774 9.774 0 0 0 12 21.818c5.423 0 9.818-4.395 9.818-9.818 0-2.316-.803-4.446-2.148-6.136l-1.005.813z"/></svg>
+                    {/* TypeScript */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#3178C6] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0H1.125zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.745-.247c-.273-.065-.563-.118-.868-.158a7.065 7.065 0 0 0-.923-.06c-.576 0-1.018.115-1.326.345-.308.23-.462.564-.462 1.002 0 .235.05.437.15.606.1.17.247.318.441.444.194.126.435.242.723.348.288.106.621.218.998.336.56.177 1.05.385 1.47.625.42.24.77.525 1.05.855.28.33.49.715.63 1.155.14.44.21.95.21 1.53 0 .85-.17 1.58-.51 2.19a4.84 4.84 0 0 1-1.41 1.62c-.6.43-1.33.74-2.19.93-.86.19-1.81.285-2.85.285-.71 0-1.39-.05-2.04-.15a8.77 8.77 0 0 1-1.83-.45v-2.58c.67.37 1.37.64 2.1.81.73.17 1.44.255 2.13.255.61 0 1.09-.115 1.44-.345.35-.23.525-.575.525-1.035 0-.27-.06-.5-.18-.69a1.97 1.97 0 0 0-.51-.51 4.94 4.94 0 0 0-.81-.42c-.34-.14-.73-.28-1.17-.42a10.6 10.6 0 0 1-1.41-.54 4.67 4.67 0 0 1-1.08-.75c-.3-.29-.53-.64-.69-1.05-.16-.41-.24-.9-.24-1.47 0-.79.16-1.47.48-2.04.32-.57.77-1.03 1.35-1.38.58-.35 1.28-.6 2.1-.75.82-.15 1.71-.225 2.67-.225zM6.9 10.05h7.26V12.3H11.7v9.45H8.79V12.3H6.9v-2.25z"/></svg>
+                    {/* Node.js */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#5FA04E] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M11.996 0c-.3 0-.6.08-.85.22L1.876 5.59a1.72 1.72 0 0 0-.86 1.49v10.74c0 .62.33 1.19.86 1.49l9.27 5.37c.25.14.55.22.85.22.3 0 .6-.08.85-.22l9.27-5.37c.53-.3.86-.87.86-1.49V7.08c0-.62-.33-1.19-.86-1.49L12.846.22a1.71 1.71 0 0 0-.85-.22zm-.006 2.41l7.8 4.51-3.66 2.11-4.14-2.39v4.78l3.66 2.11v4.22l-3.66-2.11v2.11l-7.8-4.51 3.66-2.11 4.14 2.39v-4.78l-3.66-2.11V6.63l3.66 2.11z"/></svg>
+                    {/* Tailwind CSS */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#06B6D4] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.336 6.182 14.975 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C7.666 17.818 9.027 19.2 12.001 19.2c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.336 13.382 8.975 12 6.001 12z"/></svg>
+                    {/* Python */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#3776AB] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M11.916 0C5.58 0 5.968 2.76 5.968 2.76v2.85h6.052v.858H3.636S0 6.096 0 12.48c0 6.384 3.174 6.156 3.174 6.156h1.896v-2.67s-.102-3.174 3.108-3.174h5.352s2.97.042 2.97-2.88V3.624s.432-3.624-4.584-3.624zm-3.08 1.932c.57 0 1.032.462 1.032 1.032 0 .57-.462 1.032-1.032 1.032-.57 0-1.032-.462-1.032-1.032 0-.57.462-1.032 1.032-1.032zM12.084 24c6.336 0 5.948-2.76 5.948-2.76v-2.85h-6.052v-.858h8.384S24 17.904 24 11.52c0-6.384-3.174-6.156-3.174-6.156h-1.896v2.67s.102 3.174-3.108 3.174h-5.352s-2.97-.042-2.97 2.88v6.336s-.432 3.624 4.584 3.624zm3.08-1.932c-.57 0-1.032-.462-1.032-1.032 0-.57-4.62-1.032-1.032-1.032.57 0 1.032.462 1.032 1.032 0 .57-.462 1.032-1.032 1.032z"/></svg>
+                    {/* AWS */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#FF9900] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M6.756 7.868c0-.443.102-.79.308-1.041.205-.251.523-.377.954-.377.411 0 .723.123.936.37.213.247.32.595.32 1.045v3.424c0 .411-.098.746-.296 1.004-.197.258-.517.387-.96.387-.432 0-.746-.129-.942-.387-.197-.258-.295-.593-.295-1.004V7.868zm-2.316 3.484c0 .878.271 1.57.813 2.077.542.507 1.28.761 2.215.761.944 0 1.688-.254 2.232-.761.544-.507.816-1.199.816-2.077V7.808c0-.862-.272-1.546-.816-2.052-.544-.506-1.288-.759-2.232-.759-.935 0-1.673.253-2.215.759-.542.506-.813 1.19-.813 2.052v3.544zM16.592 14.156c-1.396.908-3.085 1.39-4.887 1.39-3.924 0-7.391-2.23-9.088-5.58-.201-.397-.7-.552-1.096-.35-.397.201-.552.7-.35 1.097 2.012 3.972 6.125 6.613 10.776 6.613 2.115 0 4.108-.558 5.76-1.605.372-.236.482-.733.246-1.106-.236-.372-.733-.482-1.106-.246l.245-.213z"/></svg>
+                    {/* Docker */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#2496ED] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.186.186 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.954-5.43h2.118a.185.185 0 00.186-.186V3.574a.185.185 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185zm0 2.716h2.118a.187.187 0 00.186-.186V6.291a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.93 0h2.12a.186.186 0 00.184-.186V6.291a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.956 0h2.119a.186.186 0 00.185-.186V6.291a.186.186 0 00-.185-.185H5.143a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186zm5.886 2.714h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.186.186 0 00-.185.185zm-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186H8.1a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.956 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.143a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zm-2.93 0h2.118a.185.185 0 00.186-.185V9.006a.185.185 0 00-.186-.186H2.214a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zm23.473-.397c-.366-.273-1.437-.367-2.284-.131-.19.053-.414.156-.632.274-.294-.37-.677-.676-1.127-.887-.714-.334-1.572-.371-2.404-.15-.407-1.442-1.516-2.527-2.96-2.883-.346-.085-.72-.128-1.107-.128h-.128a.185.185 0 00-.185.185v2.9h-1.637v-2.9a.185.185 0 00-.185-.185h-.129c-.387 0-.76.043-1.107.128-1.444.356-2.553 1.441-2.96 2.883-.832-.221-1.69-.184-2.404.15-.45.211-.833.517-1.127.887a4.23 4.23 0 00-.632-.274c-.847-.236-1.918-.142-2.284.131a.576.576 0 00-.197.433c0 .878.508 2.222 1.696 3.01 1.549 1.028 3.791 1.258 5.753.882a10.66 10.66 0 003.541 0c1.962.376 4.204.146 5.753-.882 1.188-.788 1.696-2.132 1.696-3.010a.577.577 0 00-.197-.433z"/></svg>
+                    {/* Git */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#F05032] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M23.546 10.93L13.067.452c-.604-.603-1.582-.603-2.188 0L8.708 2.627l2.76 2.76c.645-.215 1.379-.07 1.889.441.516.515.658 1.258.438 1.9l2.658 2.66c.645-.223 1.387-.078 1.9.435.721.72.721 1.884 0 2.604-.719.719-1.881.719-2.6 0-.539-.541-.674-1.3-.404-1.963l-2.476-2.477V15.7c.189.096.36.223.504.368.721.721.721 1.884 0 2.604-.719.719-1.881.719-2.6 0-.721-.72-.721-1.883 0-2.604.174-.175.378-.304.599-.386V9.752c-.221-.082-.425-.211-.599-.386-.528-.528-.667-1.282-.416-1.928L7.498 4.675 1.54 10.633c-.604.604-.604 1.582 0 2.188l10.48 10.478c.604.604 1.582.604 2.188 0l9.338-9.337c.604-.604.604-1.582 0-2.032z"/></svg>
+                  </div>
+
+                  {/* Track Set 2 (Exact Duplicate) */}
+                  <div className="flex items-center gap-12 sm:gap-16 shrink-0" aria-hidden="true">
+                    {/* React */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#61DAFB] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm0-2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm-7.66 8.52a.75.75 0 0 1-.22-1.04C5.2 12.63 7.85 10 12 10s6.8 2.63 7.88 4.48a.75.75 0 1 1-1.3.76C17.65 13.62 15.35 11.5 12 11.5s-5.65 2.12-6.58 3.74a.75.75 0 0 1-1.08.28zm0-7.04a.75.75 0 0 1 1.08.28C6.35 10.38 8.65 12.5 12 12.5s5.65-2.12 6.58-3.74a.75.75 0 1 1 1.3.76C18.8 11.37 16.15 14 12 14s-6.8-2.63-7.88-4.48a.75.75 0 0 1 .22-1.04z"/></svg>
+                    {/* Next.js */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-black dark:hover:text-white transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.373 24 0 18.627 0 12S5.373 0 12 0s12 5.373 12 12c0 3.584-1.574 6.801-4.07 9.001l-1.265-1.023zM12 2.182c-5.423 0-9.818 4.395-9.818 9.818 0 3.197 1.528 6.037 3.896 7.838l7.534-11.455h2.182v10.024h-1.964V6.992l-6.837 10.428A9.774 9.774 0 0 0 12 21.818c5.423 0 9.818-4.395 9.818-9.818 0-2.316-.803-4.446-2.148-6.136l-1.005.813z"/></svg>
+                    {/* TypeScript */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#3178C6] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0H1.125zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.745-.247c-.273-.065-.563-.118-.868-.158a7.065 7.065 0 0 0-.923-.06c-.576 0-1.018.115-1.326.345-.308.23-.462.564-.462 1.002 0 .235.05.437.15.606.1.17.247.318.441.444.194.126.435.242.723.348.288.106.621.218.998.336.56.177 1.05.385 1.47.625.42.24.77.525 1.05.855.28.33.49.715.63 1.155.14.44.21.95.21 1.53 0 .85-.17 1.58-.51 2.19a4.84 4.84 0 0 1-1.41 1.62c-.6.43-1.33.74-2.19.93-.86.19-1.81.285-2.85.285-.71 0-1.39-.05-2.04-.15a8.77 8.77 0 0 1-1.83-.45v-2.58c.67.37 1.37.64 2.1.81.73.17 1.44.255 2.13.255.61 0 1.09-.115 1.44-.345.35-.23.525-.575.525-1.035 0-.27-.06-.5-.18-.69a1.97 1.97 0 0 0-.51-.51 4.94 4.94 0 0 0-.81-.42c-.34-.14-.73-.28-1.17-.42a10.6 10.6 0 0 1-1.41-.54 4.67 4.67 0 0 1-1.08-.75c-.3-.29-.53-.64-.69-1.05-.16-.41-.24-.9-.24-1.47 0-.79.16-1.47.48-2.04.32-.57.77-1.03 1.35-1.38.58-.35 1.28-.6 2.1-.75.82-.15 1.71-.225 2.67-.225zM6.9 10.05h7.26V12.3H11.7v9.45H8.79V12.3H6.9v-2.25z"/></svg>
+                    {/* Node.js */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#5FA04E] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M11.996 0c-.3 0-.6.08-.85.22L1.876 5.59a1.72 1.72 0 0 0-.86 1.49v10.74c0 .62.33 1.19.86 1.49l9.27 5.37c.25.14.55.22.85.22.3 0 .6-.08.85-.22l9.27-5.37c.53-.3.86-.87.86-1.49V7.08c0-.62-.33-1.19-.86-1.49L12.846.22a1.71 1.71 0 0 0-.85-.22zm-.006 2.41l7.8 4.51-3.66 2.11-4.14-2.39v4.78l3.66 2.11v4.22l-3.66-2.11v2.11l-7.8-4.51 3.66-2.11 4.14 2.39v-4.78l-3.66-2.11V6.63l3.66 2.11z"/></svg>
+                    {/* Tailwind CSS */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#06B6D4] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228 1.565-.89 2.288-1.624C16.336 6.182 14.975 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C10.336 13.382 8.975 12 6.001 12z"/></svg>
+                    {/* Python */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#3776AB] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M11.916 0C5.58 0 5.968 2.76 5.968 2.76v2.85h6.052v.858H3.636S0 6.096 0 12.48c0 6.384 3.174 6.156 3.174 6.156h1.896v-2.67s-.102-3.174 3.108-3.174h5.352s2.97.042 2.97-2.88V3.624s.432-3.624-4.584-3.624zm-3.08 1.932c.57 0 1.032.462 1.032 1.032 0 .57-.462 1.032-1.032 1.032-.57 0-1.032-.462-1.032-1.032 0-.57.462-1.032 1.032-1.032zM12.084 24c6.336 0 5.948-2.76 5.948-2.76v-2.85h-6.052v-.858h8.384S24 17.904 24 11.52c0-6.384-3.174-6.156-3.174-6.156h-1.896v2.67s.102 3.174-3.108 3.174h-5.352s-2.97-.042-2.97 2.88v6.336s-.432 3.624 4.584 3.624zm3.08-1.932c-.57 0-1.032-.462-1.032-1.032 0-.57-4.62-1.032-1.032-1.032.57 0 1.032.462 1.032 1.032 0 .57-.462 1.032-1.032 1.032z"/></svg>
+                    {/* AWS */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#FF9900] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M6.756 7.868c0-.443.102-.79.308-1.041.205-.251.523-.377.954-.377.411 0 .723.123.936.37.213.247.32.595.32 1.045v3.424c0 .411-.098.746-.296 1.004-.197.258-.517.387-.96.387-.432 0-.746-.129-.942-.387-.197-.258-.295-.593-.295-1.004V7.868zm-2.316 3.484c0 .878.271 1.57.813 2.077.542.507 1.28.761 2.215.761.944 0 1.688-.254 2.232-.761.544-.507.816-1.199.816-2.077V7.808c0-.862-.272-1.546-.816-2.052-.544-.506-1.288-.759-2.232-.759-.935 0-1.673.253-2.215.759-.542.506-.813 1.19-.813 2.052v3.544zM16.592 14.156c-1.396.908-3.085 1.39-4.887 1.39-3.924 0-7.391-2.23-9.088-5.58-.201-.397-.7-.552-1.096-.35-.397.201-.552.7-.35 1.097 2.012 3.972 6.125 6.613 10.776 6.613 2.115 0 4.108-.558 5.76-1.605.372-.236.482-.733.246-1.106-.236-.372-.733-.482-1.106-.246l.245-.213z"/></svg>
+                    {/* Docker */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#2496ED] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.186.186 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.954-5.43h2.118a.185.185 0 00.186-.186V3.574a.185.185 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185zm0 2.716h2.118a.187.187 0 00.186-.186V6.291a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.93 0h2.12a.186.186 0 00.184-.186V6.291a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186zm-2.956 0h2.119a.186.186 0 00.185-.186V6.291a.186.186 0 00-.185-.185H5.143a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186zm5.886 2.714h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.186.186 0 00-.185.185zm-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186H8.1a.185.185 0 00-.185.186v1.887c0 .102.083.185.185.185zm-2.956 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.143a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zm-2.93 0h2.118a.185.185 0 00.186-.185V9.006a.185.185 0 00-.186-.186H2.214a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185zm23.473-.397c-.366-.273-1.437-.367-2.284-.131-.19.053-.414.156-.632.274-.294-.37-.677-.676-1.127-.887-.714-.334-1.572-.371-2.404-.15-.407-1.442-1.516-2.527-2.96-2.883-.346-.085-.72-.128-1.107-.128h-.128a.185.185 0 00-.185.185v2.9h-1.637v-2.9a.185.185 0 00-.185-.185h-.129c-.387 0-.76.043-1.107.128-1.444.356-2.553 1.441-2.96 2.883-.832-.221-1.69-.184-2.404.15-.45.211-.833.517-1.127.887a4.23 4.23 0 00-.632-.274c-.847-.236-1.918-.142-2.284.131a.576.576 0 00-.197.433c0 .878.508 2.222 1.696 3.01 1.549 1.028 3.791 1.258 5.753.882a10.66 10.66 0 003.541 0c1.962.376 4.204.146 5.753-.882 1.188-.788 1.696-2.132 1.696-3.010a.577.577 0 00-.197-.433z"/></svg>
+                    {/* Git */}
+                    <svg className="w-5 h-5 text-zinc-800 dark:text-neutral-300 hover:text-[#F05032] transition-colors" viewBox="0 0 24 24" fill="currentColor"><path d="M23.546 10.93L13.067.452c-.604-.603-1.582-.603-2.188 0L8.708 2.627l2.76 2.76c.645-.215 1.379-.07 1.889.441.516.515.658 1.258.438 1.9l2.658 2.66c.645-.223 1.387-.078 1.9.435.721.72.721 1.884 0 2.604-.719.719-1.881.719-2.6 0-.539-.541-.674-1.3-.404-1.963l-2.476-2.477V15.7c.189.096.36.223.504.368.721.721.721 1.884 0 2.604-.719.719-1.881.719-2.6 0-.721-.72-.721-1.883 0-2.604.174-.175.378-.304.599-.386V9.752c-.221-.082-.425-.211-.599-.386-.528-.528-.667-1.282-.416-1.928L7.498 4.675 1.54 10.633c-.604.604-.604 1.582 0 2.188l10.48 10.478c.604.604 1.582.604 2.188 0l9.338-9.337c.604-.604.604-1.582 0-2.032z"/></svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

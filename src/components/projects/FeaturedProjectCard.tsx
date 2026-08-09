@@ -50,14 +50,14 @@ export function FeaturedProjectCard({
       }}
       className="featured-card-item group cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-white/20"
     >
-      {/* Media Window Enclosure — Clean, high-contrast, razor hairline border */}
+      {/* Media Window Enclosure — Pure Image without outer box containers or borders */}
       <div
         ref={imageRef}
-        className="featured-image-wrap relative w-full overflow-hidden rounded-2xl bg-zinc-950 border border-white/[0.08] group-hover:border-white/[0.22] shadow-[0_12px_40px_rgba(0,0,0,0.5)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0"
+        className="featured-image-wrap relative w-full overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0"
         style={{ clipPath: "inset(0% 0% 100% 0%)" }}
       >
-        <div className="relative w-full aspect-[16/10] overflow-hidden">
-          <div className="featured-image-inner absolute -inset-y-12 inset-x-0 w-full h-[calc(100%+6rem)] will-change-transform">
+        <div className="relative w-full aspect-[16/10] overflow-hidden flex items-center justify-center rounded-2xl">
+          <div className="featured-image-inner relative w-full h-full will-change-transform flex items-center justify-center rounded-2xl overflow-hidden">
             <Image
               src={project.coverImage}
               alt={project.title}
@@ -75,9 +75,8 @@ export function FeaturedProjectCard({
                     ? "paused"
                     : "running",
               }}
-              className="object-cover brightness-[0.94] contrast-[1.04] group-hover:brightness-100 group-hover:scale-[1.02] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="object-contain rounded-2xl group-hover:scale-[1.02] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none" />
           </div>
         </div>
       </div>
