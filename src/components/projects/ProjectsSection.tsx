@@ -5,7 +5,7 @@ export function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="relative w-full py-28 md:py-36 bg-[#080808] dark:bg-[#080808] light-mode:bg-[#F5F5F7] text-white dark:text-white light-mode:text-zinc-900 overflow-hidden transition-colors duration-400"
+      className="relative w-full py-32 sm:py-44 lg:py-52 bg-[#080808] dark:bg-[#080808] light-mode:bg-[#F5F5F7] text-white dark:text-white light-mode:text-zinc-900 overflow-hidden transition-colors duration-400 border-b border-white/[0.08]"
     >
       {/*
         THESIS: A restrained, high-craft project exhibition that pairs full-width featured mask-wipe hero cards with an editorial, interactive compact project index. Refuses nested card containers and artificial AI slop.

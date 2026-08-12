@@ -1,77 +1,26 @@
 @import "tailwindcss";
 
 /* ============================================================
-   DESIGN SYSTEM — Severe Minimal (Monochrome)
+   DESIGN SYSTEM — Severe Minimal (Obsidian Dark)
    
-   Strict monochrome. No accent color. Hierarchy through
-   typographic weight, scale, and whitespace alone.
+   Strict obsidian dark palette (#080808 base, #121212 surface).
+   Hierarchy through crisp typography, micro-motion, and
+   hairline borders (white/[0.08]).
    ============================================================ */
 
 @theme {
   /* ── Colors ─────────────────────────────────────────────── */
-  --color-bg: #FAFAFA;
-  --color-fg: #0A0A0A;
-  --color-muted: #71717A;
-  --color-border: #E4E4E7;
-  --color-surface: #F4F4F5;
+  --color-bg: #080808;
+  --color-fg: #FFFFFF;
+  --color-muted: #A1A1AA;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-surface: #121212;
 
   /* ── Font Families ──────────────────────────────────────── */
   --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-hero: var(--font-instrument-serif), "Georgia", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-  /* ── Type Scale ─────────────────────────────────────────── */
-  /* Hero Display sizes — fluid via clamp() */
-  --text-display-xl: clamp(3.2rem, 10vw + 1rem, 12rem);
-  --text-display-xl--line-height: 0.95;
-  --text-display-xl--letter-spacing: -0.04em;
-  --text-display-xl--font-weight: 300;
-
-  /* Section Display sizes */
-  --text-display-lg: clamp(2.25rem, 5vw, 4.5rem);
-  --text-display-lg--line-height: 1.04;
-  --text-display-lg--letter-spacing: -0.035em;
-  --text-display-lg--font-weight: 300;
-
-  --text-display: clamp(1.75rem, 2vw + 0.5rem, 2.5rem);
-  --text-display--line-height: 1.1;
-  --text-display--letter-spacing: -0.03em;
-  --text-display--font-weight: 700;
-
-  /* Body sizes — fixed */
-  --text-lead: 1.25rem;
-  --text-lead--line-height: 1.6;
-  --text-lead--letter-spacing: -0.01em;
-
-  --text-body: 1rem;
-  --text-body--line-height: 1.65;
-
-  --text-caption: 0.875rem;
-  --text-caption--line-height: 1.5;
-
-  --text-fine: 0.75rem;
-  --text-fine--line-height: 1.4;
-  --text-fine--letter-spacing: 0.02em;
-
-  /* ── Spacing ────────────────────────────────────────────── */
-  /* 8px grid — generous scale for breathing-room layouts */
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-6: 1.5rem;
-  --spacing-8: 2rem;
-  --spacing-12: 3rem;
-  --spacing-16: 4rem;
-  --spacing-20: 5rem;
-  --spacing-24: 6rem;
-  --spacing-32: 8rem;
-  --spacing-48: 12rem;
-  --spacing-64: 16rem;
-
-  /* ── Container ──────────────────────────────────────────── */
-  --container-3xl: 1680px;
 
   /* ── Easing ─────────────────────────────────────────────── */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -82,45 +31,7 @@
   --transition-duration: 300ms;
 }
 
-/* Dark Mode (Default) */
-html.dark {
-  --color-bg: #080808;
-  --color-fg: #FFFFFF;
-  --color-muted: #A1A1AA;
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-surface: #121212;
-  color-scheme: dark;
-}
-
-/* Light Mode Overrides */
-html.light-mode,
-html[data-theme="light"] {
-  --color-bg: #F5F5F7;
-  --color-fg: #111111;
-  --color-muted: #55555E;
-  --color-border: rgba(0, 0, 0, 0.1);
-  --color-surface: #FFFFFF;
-  color-scheme: light;
-}
-
-/* Global Light Mode Element Overrides */
-html.light-mode main,
-html.light-mode section {
-  background-color: var(--color-bg) !important;
-  color: var(--color-fg) !important;
-}
-
-html.light-mode h1:not(.hero-bg-text),
-html.light-mode h2,
-html.light-mode h3,
-html.light-mode h4 {
-  color: #111111 !important;
-}
-
-/* ============================================================
-   BASE LAYER — Global resets and defaults
-   ============================================================ */
-
+/* Base Layer — Global resets and defaults */
 @layer base {
   *,
   *::before,
@@ -133,20 +44,18 @@ html.light-mode h4 {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
-    background-color: var(--color-bg);
-    color: var(--color-fg);
-    transition: background-color 0.4s ease, color 0.4s ease;
+    background-color: #080808;
+    color: #FFFFFF;
+    color-scheme: dark;
   }
 
   body {
     font-family: var(--font-body);
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
+    font-size: 1rem;
+    line-height: 1.65;
     min-height: 100dvh;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    background-color: #080808;
+    color: #FFFFFF;
   }
 
   /* Coarse pointer (touch devices) — minimum tap target padding */
@@ -170,28 +79,28 @@ html.light-mode h4 {
 
   /* Selection */
   ::selection {
-    background-color: var(--color-fg);
-    color: var(--color-bg);
+    background-color: #af5bf0;
+    color: #FFFFFF;
   }
 
-  /* Focus rings — accessible, monochrome */
+  /* Focus rings — accessible, violet */
   :focus-visible {
-    outline: 2px solid var(--color-fg);
+    outline: 2px solid #af5bf0;
     outline-offset: 3px;
   }
 
-  /* Links — no decoration, subtle transition */
+  /* Links */
   a {
     color: inherit;
     text-decoration: none;
-    transition: opacity var(--transition-duration) var(--transition-timing-function);
+    transition: opacity 300ms ease;
   }
 
   a:hover {
-    opacity: 0.6;
+    opacity: 0.85;
   }
 
-  /* Images — responsive by default */
+  /* Images */
   img,
   video,
   svg {
@@ -200,7 +109,7 @@ html.light-mode h4 {
     height: auto;
   }
 
-  /* Headings — display font by default */
+  /* Headings */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     font-weight: 700;
@@ -209,123 +118,7 @@ html.light-mode h4 {
   }
 }
 
-/* ============================================================
-   UTILITIES — Semantic type utilities
-   ============================================================ */
-
-@utility text-display-xl {
-  font-family: var(--font-display);
-  font-size: var(--text-display-xl);
-  line-height: var(--text-display-xl--line-height);
-  letter-spacing: var(--text-display-xl--letter-spacing);
-  font-weight: var(--text-display-xl--font-weight);
-  text-wrap: balance;
-}
-
-@utility text-display-lg {
-  font-family: var(--font-display);
-  font-size: var(--text-display-lg);
-  line-height: var(--text-display-lg--line-height);
-  letter-spacing: var(--text-display-lg--letter-spacing);
-  font-weight: var(--text-display-lg--font-weight);
-  text-wrap: balance;
-}
-
-@utility text-display {
-  font-family: var(--font-display);
-  font-size: var(--text-display);
-  line-height: var(--text-display--line-height);
-  letter-spacing: var(--text-display--letter-spacing);
-  font-weight: var(--text-display--font-weight);
-  text-wrap: balance;
-}
-
-@utility text-lead {
-  font-size: var(--text-lead);
-  line-height: var(--text-lead--line-height);
-  letter-spacing: var(--text-lead--letter-spacing);
-}
-
-@utility text-body {
-  font-size: var(--text-body);
-  line-height: var(--text-body--line-height);
-}
-
-@utility text-caption {
-  font-size: var(--text-caption);
-  line-height: var(--text-caption--line-height);
-  color: var(--color-muted);
-}
-
-@utility text-fine {
-  font-size: var(--text-fine);
-  line-height: var(--text-fine--line-height);
-  letter-spacing: var(--text-fine--letter-spacing);
-  color: var(--color-muted);
-  text-transform: uppercase;
-}
-
-/* ============================================================
-   HERO — Bottom-anchored portrait, single-line serif name
-   
-   The portrait is large and pinned to the bottom of the
-   viewport so the chest clips at the section edge. The name
-   sits behind in Instrument Serif on a single line.
-   ============================================================ */
-
-@layer components {
-  .hero-section {
-    position: relative;
-    display: grid;
-    place-items: center;
-    height: 100dvh;
-    overflow: hidden;
-    background-color: var(--color-bg);
-  }
-
-  .hero-name {
-    grid-area: 1 / 1;
-    z-index: 0;
-    align-self: center;
-    text-align: center;
-    white-space: nowrap;
-
-    /* Instrument Serif — the one place on the site that uses a serif,
-       creating immediate visual distinction from the sans-serif system */
-    font-family: var(--font-instrument-serif), "Georgia", serif;
-    font-style: italic;
-
-    /* Fluid single-line sizing — fits "UMER QURESHI" on one line
-       from 375px to 1920px+ viewports */
-    font-size: clamp(2.4rem, 10.5vw, 13rem);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--color-fg);
-  }
-
-  .hero-portrait {
-    grid-area: 1 / 1;
-    z-index: 10;
-    align-self: end; /* anchors to bottom of grid → bottom of viewport */
-
-    /* Large — dominates the viewport */
-    width: clamp(340px, 55vw, 820px);
-
-    /* No bottom gap — the chest clips at the section edge */
-    margin-bottom: 0;
-  }
-
-  .hero-role {
-    position: absolute;
-    bottom: var(--spacing-8);
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    white-space: nowrap;
-  }
-}
-
+/* Animations */
 @keyframes aurora-text-sweep {
   0% {
     background-position: 0% 50%;
@@ -342,19 +135,6 @@ html.light-mode h4 {
   animation: aurora-text-sweep 6s ease infinite;
 }
 
-@keyframes shiny-sweep {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.animate-shiny-sweep {
-  animation: shiny-sweep 4s linear infinite;
-}
-
 @keyframes glitter-flow {
   0% {
     background-position: 0% 0%;
@@ -365,7 +145,6 @@ html.light-mode h4 {
 }
 
 .magic-word-accent {
-  /* Real macro purple glitter texture clipped to text with balanced light metallic luster */
   background-image: 
     linear-gradient(rgba(232, 185, 254, 0.35), rgba(200, 140, 252, 0.2)),
     url('/images/purple_glitter_texture.png');
@@ -405,8 +184,3 @@ html.light-mode h4 {
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
 }
-
-
-
-
-

@@ -9,12 +9,14 @@ interface FeaturedProjectCardProps {
   project: Project;
   onSelect: (project: Project) => void;
   variant: "full" | "half";
+  displayIndex?: string;
 }
 
 export function FeaturedProjectCard({
   project,
   onSelect,
   variant,
+  displayIndex,
 }: FeaturedProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -48,15 +50,15 @@ export function FeaturedProjectCard({
           onSelect(project);
         }
       }}
-      className="featured-card-item group cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-white/20"
+      className="featured-card-item group cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-[#af5bf0]"
     >
-      {/* Media Window Enclosure — Pure Image without outer box containers or borders */}
+      {/* Media Window Enclosure */}
       <div
         ref={imageRef}
         className="featured-image-wrap relative w-full overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0"
         style={{ clipPath: "inset(0% 0% 100% 0%)" }}
       >
-        <div className="relative w-full aspect-[16/10] overflow-hidden flex items-center justify-center rounded-2xl">
+        <div className="relative w-full aspect-[16/10] overflow-hidden flex items-center justify-center rounded-2xl bg-[#121212]">
           <div className="featured-image-inner relative w-full h-full will-change-transform flex items-center justify-center rounded-2xl overflow-hidden">
             <Image
               src={project.coverImage}
@@ -81,17 +83,16 @@ export function FeaturedProjectCard({
         </div>
       </div>
 
-      {/* Editorial Content Block Below Image */}
+      {/* Content Block */}
       <div
         ref={textRef}
         className="featured-text-block pt-6 sm:pt-8 flex flex-col gap-3 opacity-0 transform translate-y-6"
       >
-        {/* Title, Category & Direct Action Line */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5 min-w-0">
             <div className="flex items-center gap-3">
               <span className="font-mono text-xs tracking-[0.2em] text-zinc-500 font-medium select-none">
-                {project.index}
+                {displayIndex || project.index}
               </span>
               <span className="text-zinc-600 font-mono text-xs">•</span>
               <span className="font-mono text-xs tracking-[0.16em] uppercase text-zinc-400 font-medium">
@@ -115,7 +116,7 @@ export function FeaturedProjectCard({
           </div>
         </div>
 
-        {/* Crisp Description */}
+        {/* Tagline */}
         <p
           className={`font-light leading-relaxed text-zinc-400 group-hover:text-zinc-300 transition-colors duration-300 ${
             variant === "full"
@@ -126,7 +127,7 @@ export function FeaturedProjectCard({
           {project.tagline}
         </p>
 
-        {/* Clean Tech Stack Tags */}
+        {/* Tech Stack Tags */}
         <div className="flex items-center gap-2 pt-1 flex-wrap">
           {project.tags.slice(0, 4).map((tag) => (
             <span

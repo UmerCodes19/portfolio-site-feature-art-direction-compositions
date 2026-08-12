@@ -14,11 +14,19 @@ export interface ContactData {
   }[];
 }
 
+// Obfuscation helper: string fragments assembled dynamically to block static scraper bots
+const getObfuscatedEmail = () => ["0252umer", "gmail.com"].join(String.fromCharCode(64));
+const getObfuscatedPhone = () => ["+92", "334", "3778636"].join(String.fromCharCode(32));
+
 export const CONTACT_DATA: ContactData = {
   name: "Muhammad Umer Qureshi",
   title: "Software Engineer",
-  email: "0252umer@gmail.com",
-  phone: "+92 334 3778636",
+  get email() {
+    return getObfuscatedEmail();
+  },
+  get phone() {
+    return getObfuscatedPhone();
+  },
   location: "Karachi, Sindh, Pakistan (Open to Remote / Relocation)",
   availability: "Available for full-time roles & select engineering contracts.",
   preferredMethod: "Email / LinkedIn / Phone",

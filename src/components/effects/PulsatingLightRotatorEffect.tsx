@@ -8,7 +8,6 @@ interface PulsatingLightRotatorEffectProps {
   duration?: number;
   className?: string;
   style?: React.CSSProperties;
-  isLight?: boolean;
 }
 
 export function PulsatingLightRotatorEffect({
@@ -16,13 +15,12 @@ export function PulsatingLightRotatorEffect({
   duration = 5500,
   className = "",
   style,
-  isLight = false,
 }: PulsatingLightRotatorEffectProps) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    if (isHovered) return; // Pause automatic cycling when visitor hovers over the word
+    if (isHovered) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % words.length);
     }, duration);
@@ -40,7 +38,7 @@ export function PulsatingLightRotatorEffect({
       onClick={handleNextWord}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      title="Click to advance to the next title"
+      title="Click to advance to next word"
       className={`inline-block relative overflow-visible h-[1.2em] leading-none cursor-pointer group transition-transform duration-300 active:scale-98 ${className}`}
       style={style}
     >
@@ -66,11 +64,7 @@ export function PulsatingLightRotatorEffect({
               transition: { duration: 0.3, ease: "easeIn" },
             },
           }}
-          className={`inline-flex relative whitespace-nowrap ${
-            isLight 
-              ? "bg-clip-text text-transparent bg-gradient-to-b from-zinc-800 via-zinc-600 to-zinc-800 font-extrabold tracking-tight" 
-              : "bg-clip-text text-transparent bg-gradient-to-r from-neutral-300 via-white to-neutral-300 bg-[length:200%_auto] animate-shimmer"
-          }`}
+          className="inline-flex relative whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-neutral-300 via-white to-neutral-300 bg-[length:200%_auto] animate-shimmer"
         >
           {currentWord.split("").map((char, charIdx) => (
             <motion.span
@@ -94,11 +88,6 @@ export function PulsatingLightRotatorEffect({
           ))}
         </motion.span>
       </AnimatePresence>
-
-      {/* Subtle Hint Indicator on Hover */}
-      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[9px] font-mono tracking-widest uppercase text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none select-none">
-        [ click to cycle ]
-      </span>
     </span>
   );
 }

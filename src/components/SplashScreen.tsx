@@ -281,27 +281,34 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         stage === "exiting" ? "bg-transparent" : "bg-[#090909]"
       }`}
     >
+      {/* Accessible Screen Reader Summary */}
+      <div className="sr-only">
+        Muhammad Umer Qureshi — Software Engineer & Full-Stack Developer based in Karachi, Pakistan.
+      </div>
+
+      {/* Single Top-level Film Grain Overlay for optimal 60fps GPU performance */}
+      <div
+        className="absolute inset-0 opacity-[0.025] pointer-events-none z-20"
+        style={{
+          backgroundImage: `radial-[#ffffff]`,
+        }}
+      />
+
       {/* 6 Large Horizontal Marquee Bands (Solid #090909 Background per band) */}
-      <div className="relative z-0 flex-1 flex flex-col w-full h-full">
+      <div className="relative z-0 flex-1 flex flex-col w-full h-full" aria-hidden="true">
         {BRAND_BANDS.map((band, i) => (
           <div
             key={i}
             ref={(el) => {
               rowsRef.current[i] = el;
             }}
-            className="w-full flex-1 flex items-center overflow-hidden border-b border-white/[0.04] bg-[#090909] relative shadow-2xl"
+            className="w-full flex-1 flex items-center overflow-hidden border-b border-white/[0.04] bg-[#090909] relative shadow-2xl will-change-transform"
+            style={{ transform: "translateZ(0)" }}
           >
-            {/* Subtle Film Grain Overlay per Band */}
-            <div
-              className="absolute inset-0 opacity-[0.035] pointer-events-none mix-blend-overlay z-10"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-              }}
-            />
-
             {/* Continuous Marquee Track */}
             <div
-              className={`marquee-track flex whitespace-nowrap text-[clamp(44px,6.5vw,92px)] font-sans uppercase tracking-[0.14em] leading-none z-0 ${band.weightClass}`}
+              className={`marquee-track flex whitespace-nowrap text-[clamp(44px,6.5vw,92px)] font-sans uppercase tracking-[0.14em] leading-none z-0 ${band.weightClass} will-change-transform`}
+              style={{ transform: "translateZ(0)" }}
             >
               <div className="flex items-center pr-8 sm:pr-12 md:pr-16">
                 {renderPhraseContent(band)}

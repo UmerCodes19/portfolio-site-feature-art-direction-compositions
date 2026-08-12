@@ -4,17 +4,26 @@ import { useEffect, useRef, useState } from "react";
 import { useMotionValue, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import dynamic from "next/dynamic";
 import { Project, PROJECTS } from "@/data/projects";
 import { FeaturedProjectCard } from "./FeaturedProjectCard";
 import { ProjectRow } from "./ProjectRow";
-import { CursorPreview } from "./CursorPreview";
-import { ProjectDetailModal } from "./ProjectDetailModal";
+
+const CursorPreview = dynamic(
+  () => import("./CursorPreview").then((mod) => mod.CursorPreview),
+  { ssr: false }
+);
+
+const ProjectDetailModal = dynamic(
+  () => import("./ProjectDetailModal").then((mod) => mod.ProjectDetailModal),
+  { ssr: false }
+);
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const FEATURED_SLUGS = ["adhura", "algorhythms", "trace"];
+const FEATURED_SLUGS = ["adhura", "querytalk", "trace"];
 
 interface ProjectsListClientProps {
   projects?: Project[];
@@ -41,6 +50,13 @@ export function ProjectsListClient({
     (p) => !FEATURED_SLUGS.includes(p.slug)
   );
 
+  const displayOrderedProjects = [...featured, ...remaining];
+
+  const getDisplayIndex = (project: Project): string => {
+    const idx = displayOrderedProjects.findIndex((p) => p.slug === project.slug);
+    return idx >= 0 ? String(idx + 1).padStart(2, "0") : project.index;
+  };
+
   const activeProject =
     remaining.find((p) => p.slug === hoveredSlug) || null;
 
@@ -52,7 +68,6 @@ export function ProjectsListClient({
   useEffect(() => {
     if (isReducedMotion || !containerRef.current) return;
 
-    // Load safety check: ensure ScrollTrigger recalculates after images load
     const handleImagesLoaded = () => {
       ScrollTrigger.refresh();
     };
@@ -64,38 +79,29 @@ export function ProjectsListClient({
     }
 
     const ctx = gsap.context(() => {
-      // 0. Section Header Entrance
       if (headerRef.current) {
-        const headerNum = headerRef.current.querySelector(".header-num");
         const headerTitle = headerRef.current.querySelector(".header-title");
 
-        const headerTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: headerRef.current,
-            start: "top 88%",
-            toggleActions: "play none none none",
-          },
-        });
-
-        if (headerNum) {
-          headerTl.fromTo(
-            headerNum,
-            { opacity: 0, y: 14 },
-            { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
-          );
-        }
-
         if (headerTitle) {
-          headerTl.fromTo(
+          gsap.fromTo(
             headerTitle,
             { opacity: 0, y: 24, filter: "blur(4px)" },
-            { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, ease: "power3.out" },
-            "-=0.3"
+            {
+              opacity: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: headerRef.current,
+                start: "top 88%",
+                toggleActions: "play none none none",
+              },
+            }
           );
         }
       }
 
-      // 1. Featured Cards: Directional Clip Wipes, Scale Reveal & Staggered Micro Tag Sequence
       const cards = featuredRef.current?.querySelectorAll(".featured-card-item");
       if (cards && cards.length > 0) {
         cards.forEach((card) => {
@@ -114,7 +120,6 @@ export function ProjectsListClient({
             },
           });
 
-          // Single-direction Top-to-Bottom Mask Wipe: inset(0 0 100% 0) -> inset(0 0 0 0)
           cardTl.fromTo(
             imageWrap,
             { clipPath: "inset(0% 0% 100% 0%)", opacity: 0, scale: 0.98 },
@@ -127,7 +132,6 @@ export function ProjectsListClient({
             }
           );
 
-          // Text block reveal with subtle blur transition
           cardTl.fromTo(
             textBlock,
             { opacity: 0, y: 28, filter: "blur(4px)" },
@@ -141,7 +145,6 @@ export function ProjectsListClient({
             "-=0.6"
           );
 
-          // Staggered tag arrival sequence
           if (tags.length > 0) {
             cardTl.fromTo(
               tags,
@@ -158,7 +161,6 @@ export function ProjectsListClient({
             );
           }
 
-          // True Internal Image Window Parallax (smooth scrubbed movement)
           if (imageInner) {
             gsap.fromTo(
               imageInner,
@@ -178,7 +180,6 @@ export function ProjectsListClient({
         });
       }
 
-      // 2. Compact Index Rows: Clean Staggered Cascade
       const rowItems = indexRef.current?.querySelectorAll(".compact-row-item");
       if (rowItems && rowItems.length > 0) {
         gsap.fromTo(
@@ -212,18 +213,13 @@ export function ProjectsListClient({
       ref={containerRef}
       className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
     >
-      {/* Section Header with entrance animation */}
+      {/* Section Header */}
       <div ref={headerRef} className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-16 md:mb-24 pb-8 border-b border-white/[0.06]">
-        <div className="flex flex-col gap-2">
-          <span className="header-num font-mono text-xs font-medium tracking-[0.28em] uppercase text-zinc-500 select-none opacity-0">
-            01 &nbsp;—&nbsp; Selected Works
-          </span>
-          <h2 className="header-title text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-[-0.04em] text-[#FAFAFA] leading-[0.96] opacity-0">
-            Selected <span className="italic font-extralight text-zinc-400">Works.</span>
-          </h2>
-        </div>
-        <p className="font-mono text-xs text-zinc-400 tracking-[0.2em] uppercase select-none hidden md:block">
-          {projects.length} Index Entries (2023 — 2026)
+        <h2 className="header-title text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-[-0.04em] text-[#FAFAFA] leading-[0.96] opacity-0">
+          Selected <span className="italic font-extralight text-zinc-400">Works.</span>
+        </h2>
+        <p className="font-mono text-xs text-zinc-500 tracking-[0.2em] uppercase select-none hidden md:block pb-2">
+          {projects.length} Works (2023 — 2026)
         </p>
       </div>
 
@@ -236,6 +232,7 @@ export function ProjectsListClient({
           <div>
             <FeaturedProjectCard
               project={featured[0]}
+              displayIndex={getDisplayIndex(featured[0])}
               onSelect={setSelectedProject}
               variant="full"
             />
@@ -248,6 +245,7 @@ export function ProjectsListClient({
               <div key={project.slug}>
                 <FeaturedProjectCard
                   project={project}
+                  displayIndex={getDisplayIndex(project)}
                   onSelect={setSelectedProject}
                   variant="half"
                 />
@@ -263,6 +261,7 @@ export function ProjectsListClient({
           <div key={project.slug}>
             <ProjectRow
               project={project}
+              displayIndex={getDisplayIndex(project)}
               isHovered={hoveredSlug === project.slug}
               onHover={setHoveredSlug}
               onLeave={() => setHoveredSlug(null)}
@@ -281,11 +280,14 @@ export function ProjectsListClient({
       />
 
       {/* Detail modal */}
-      <ProjectDetailModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-        isReducedMotion={isReducedMotion}
-      />
+      {selectedProject && (
+        <ProjectDetailModal
+          project={selectedProject}
+          displayIndex={getDisplayIndex(selectedProject)}
+          onClose={() => setSelectedProject(null)}
+          isReducedMotion={isReducedMotion}
+        />
+      )}
     </div>
   );
 }
